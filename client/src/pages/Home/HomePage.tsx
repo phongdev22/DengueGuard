@@ -7,72 +7,29 @@ import styled from "styled-components";
 import tw from "twin.macro";
 import { useStore } from "@store";
 
-const processWeatherData = (data: any) => {
-    let totalRainfall = 0;
-    let nRainingDays = 0;
-    let minHumidity = Infinity;
-    let totalTemp = 0;
-    let tempMin = Infinity;
-    let tempMax = -Infinity;
-    let windSpeeds = [];
-
-    data.list.forEach((day: any) => {
-        // Nhiệt độ
-        totalTemp += (day.temp.min + day.temp.max) / 2;
-        tempMin = Math.min(tempMin, day.temp.min);
-        tempMax = Math.max(tempMax, day.temp.max);
-
-        // Độ ẩm
-        minHumidity = Math.min(minHumidity, day.humidity);
-
-        // Gió
-        // windSpeeds.push(day.speed);
-
-        // Mưa
-        if (day.rain) {
-            totalRainfall += day.rain;
-            nRainingDays += 1;
-        }
-    });
-
-    return {
-        totalRainfall,
-        nRainingDays,
-        averageTemperature: totalTemp / data.list.length,
-        minHumidity,
-        windSpeeds,
-        tempMin,
-        tempMax,
-    };
-};
-
 const API_KEY = "10a1fac577550d7bf175224cc6bad8ea";
+
 const locations = {
     "Miền Bắc": [
         { value: "hanoi", label: "Hà Nội", lat: 21.0285, lon: 105.8542 },
-        { value: "haiphong", label: "Hải Phòng", lat: 20.8648, lon: 106.6831 },
+        {
+            value: "quangninh",
+            label: "Quảng Ninh",
+            lat: 20.9475,
+            lon: 107.0734,
+        },
     ],
     "Miền Trung": [
-        { value: "danang", label: "Đà Nẵng", lat: 16.0544, lon: 108.2022 },
-        { value: "khanhhoa", label: "Khánh Hòa", lat: 12.2388, lon: 109.1966 },
-    ],
-    "Tây Nguyên": [
-        { value: "daklak", label: "Đắk Lắk", lat: 12.6663, lon: 108.0382 },
+        { value: "quangnam", label: "Quảng Nam", lat: 15.5736, lon: 108.474 },
+        { value: "ninhthuan", label: "Ninh Thuận", lat: 11.6231, lon: 108.862 },
     ],
     "Miền Nam": [
-        {
-            value: "hochiminh",
-            label: "TP. Hồ Chí Minh",
-            lat: 10.7769,
-            lon: 106.7009,
-        },
-        { value: "dongnai", label: "Đồng Nai", lat: 10.9453, lon: 107.4563 },
-    ],
-    "Đồng bằng sông Cửu Long": [
         { value: "cantho", label: "Cần Thơ", lat: 10.0452, lon: 105.7469 },
-        { value: "tiengiang", label: "Tiền Giang", lat: 10.36, lon: 106.36 },
+        { value: "angiang", label: "An Giang", lat: 10.5216, lon: 105.1259 },
+        { value: "baclieu", label: "Bạc Liêu", lat: 9.2941, lon: 105.7278 },
     ],
 };
+const locationFlat = Object.values(locations).flat();
 
 const weatherIcons = {
     "01d": "☀️", // Trời nắng
@@ -130,6 +87,20 @@ interface Location {
     lon: number;
 }
 
+const getHeatmapColor = value => {
+    let hue;
+
+    if (value <= 50) {
+        // Xanh lá (120) → Vàng (60)
+        hue = 120 - (value / 50) * 60;
+    } else {
+        // Vàng (60) → Đỏ (0)
+        hue = 60 - ((value - 50) / 50) * 60;
+    }
+
+    return `hsl(${hue}, 100%, 50%)`;
+};
+
 const getWeatherDataByLocation = async (lat: number, long: number) => {
     console.log("Fetching weather data...");
     try {
@@ -158,6 +129,89 @@ const getWeatherDataByLocation = async (lat: number, long: number) => {
     }
 };
 
+const processPredict = async (code: string, lat: number, lon: number) => {
+    try {
+        // 🕒 Tính timestamp từ 5 ngày trước đến hiện tại
+        const now = Math.floor(Date.now() / 1000); // UNIX timestamp hiện tại
+        const sevenDaysAgo = now - 8 * 86400; // Lùi lại 5 ngày (86400s = 1 ngày)
+
+        // 🛠️ Gọi API OpenWeather để lấy dữ liệu lịch sử
+        const { data } = await axios.get(
+            `https://history.openweathermap.org/data/2.5/history/city`,
+            {
+                params: {
+                    lat,
+                    lon,
+                    type: "hour",
+                    start: sevenDaysAgo,
+                    end: now,
+                    units: "metric",
+                    appid: API_KEY,
+                },
+            },
+        );
+
+        if (!data || !data.list) {
+            return { error: "Không thể lấy dữ liệu thời tiết" };
+        }
+
+        console.log("Weather Data:", data);
+
+        // 🛠️ Xử lý dữ liệu thời tiết để lấy các đặc trưng
+        let totalRainfall = 0;
+        let nRainingDays = 0;
+        let totalTemperature = 0;
+        let minHumidity = Infinity;
+        let totalCloudCover = 0;
+        let count = 0;
+
+        data.list.forEach((item: any) => {
+            // 🌧️ Tổng lượng mưa & số ngày có mưa (nếu có dữ liệu mưa)
+            if (item.rain && item.rain["3h"] !== undefined) {
+                totalRainfall += item.rain["3h"];
+                if (item.rain["3h"] > 0) nRainingDays++;
+            }
+
+            // 🌡️ Tính nhiệt độ trung bình
+            if (item.main?.temp !== undefined) {
+                totalTemperature += item.main.temp;
+                count++;
+            }
+
+            // 💧 Độ ẩm thấp nhất
+            if (item.main?.humidity !== undefined) {
+                minHumidity = Math.min(minHumidity, item.main.humidity);
+            }
+
+            // ☀️ Ước tính số giờ có nắng từ % mây
+            if (item.clouds?.all !== undefined) {
+                totalCloudCover += 100 - item.clouds.all; // Ít mây hơn => nhiều nắng hơn
+            }
+        });
+
+        // 🛠️ Tính toán các chỉ số thời tiết
+        const features = {
+            totalRainfall,
+            nRainingDays,
+            averageTemperature: count > 0 ? totalTemperature / count : 0,
+            minHumidity,
+            nHoursSunshine: count > 0 ? (totalCloudCover / count) * 0.24 : 0, // Giả định tỷ lệ % nắng trên 24h
+        };
+
+        console.log("Computed Features:", features);
+        // 🛠️ Gửi request đến backend để nhận dự đoán
+        const response = await axios.post("http://localhost:8000/predict", {
+            code,
+            ...features,
+        });
+        console.log("Response data:", response.data);
+        return response.data?.prediction ?? 0;
+    } catch (error: any) {
+        console.log("Error:", error.message);
+        return 0;
+    }
+};
+
 const HomePage: React.FunctionComponent = () => {
     const { OtpGroup, Option } = Select;
 
@@ -168,36 +222,35 @@ const HomePage: React.FunctionComponent = () => {
         selectedLocation?.value ?? "",
     );
     const [forecastData, setForecastData] = useState<Forecast[]>([]);
-    const [prediction, setPrediction] = useState<string>("");
+    const [prediction, setPrediction] = useState<number | null>(0);
 
     const handleOpenModal = () => {
         setPopupVisible(!popupVisible);
     };
 
-    const location = useMemo(
-        () => Object.values(locations).flat(),
-        [locations],
-    );
-
-    const currentLocation: Location | undefined = useMemo(() => {
-        return location.find(({ value }) => value === selectedProvince);
-    }, [location, selectedProvince]);
-
     const handleOpenModalMore = async () => {
         setPopupWeather(!popupWeather);
     };
+
+    const currentLocation: Location | undefined = useMemo(() => {
+        return locationFlat.find(({ value }) => value === selectedProvince);
+    }, [selectedProvince]);
 
     useEffect(() => {
         if (!currentLocation) {
             return;
         }
 
-        const { lat, lon } = currentLocation;
+        const { value, lat, lon } = currentLocation;
         setSelectedLocation(currentLocation);
         getWeatherDataByLocation(lat, lon).then(forecast => {
             setForecastData(forecast);
         });
-    }, [selectedProvince]);
+        processPredict(value, lat, lon).then(prediction => {
+            setPrediction(prediction);
+        });
+        return () => {};
+    }, [currentLocation]);
 
     return (
         <PageLayout
@@ -250,7 +303,7 @@ const HomePage: React.FunctionComponent = () => {
 
                 <Box>
                     <IconWrapper>
-                        <Box style={{ fontSize: "20px" }}>
+                        <Box style={{ fontSize: "30px" }}>
                             {(forecastData[0] && forecastData[0].icon) ?? "🌡️"}
                         </Box>
                         <Box style={{ marginLeft: "30px" }}>
@@ -274,15 +327,31 @@ const HomePage: React.FunctionComponent = () => {
                         padding: "10px",
                     }}
                 >
-                    <Box className="!text-2xl !font-bold">
+                    <Box className="!text-xl !font-bold">
                         Pandemic outbreak prediction
                     </Box>
                 </Box>
-
                 <Box>
-                    <IconWrapper>
-                        <Box style={{ fontSize: "20px" }}>{"🦠"}</Box>
-                        <Box style={{ marginLeft: "30px" }}>{"No data"}</Box>
+                    <IconWrapper className="!p-0">
+                        <Box style={{ fontSize: "30px" }}>{"🦠"}</Box>
+                        <Box
+                            style={{
+                                marginLeft: "30px",
+                                backgroundColor: getHeatmapColor(prediction), // Màu dịu hơn
+                                borderRadius: "50%", // Làm thành vòng tròn
+                                width: "60px", // Kích thước hình tròn
+                                height: "60px",
+                                display: "flex", // Dùng Flexbox để căn giữa
+                                alignItems: "center", // Căn giữa theo chiều dọc
+                                justifyContent: "center", // Căn giữa theo chiều ngang
+                                fontWeight: "bold",
+                                fontSize: "20px",
+                                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Thêm bóng mờ nhẹ
+                                textAlign: "center", // Đảm bảo chữ luôn giữa
+                            }}
+                        >
+                            {`${prediction}%`}
+                        </Box>
                     </IconWrapper>
                 </Box>
                 <Box>
