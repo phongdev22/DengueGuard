@@ -8,7 +8,18 @@ export default () => {
     return defineConfig({
         root: "./src",
         base: "./",
-        plugins: [react(), macrosPlugin()],
+        plugins: [
+            react(),
+            macrosPlugin(),
+            {
+                name: "override-config",
+                config: () => ({
+                    build: {
+                        target: "es2020",
+                    },
+                }),
+            },
+        ],
         build: {
             target: "es2020",
         },

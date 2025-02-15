@@ -1,102 +1,55 @@
 import React, { FC } from "react";
-import styled from "styled-components";
-import tw from "twin.macro";
 import { Profile } from "@dts";
-import { Box, Text } from "zmp-ui";
-import { CopyButton, Divider } from "@components/common";
+import { Box, Page, Avatar, Text } from "zmp-ui";
 
-const Wrapper = styled.div`
-    ${tw`bg-white`}
-`;
-
-const InfoWrapper = styled.div`
-    ${tw`rounded-[8px] border-devider_1 py-8 px-4 w-full border-[1px]`}
-`;
-
-const IDText = styled(Text.Title)`
-    ${tw`text-text_1`}
-`;
-
-const RowDisplay = styled.div`
-    ${tw`flex flex-row justify-between items-start`}
-
-    &:not(:first-child) {
-        margin-top: 8px;
-    }
-`;
-
-const FieldName = styled(Text)`
-    ${tw`text-text_1`}
-    ${({ nowrap }: { nowrap?: string }) => {
-        if (nowrap === "true") {
-            return tw`whitespace-nowrap`;
-        }
-        return "";
-    }}
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 22px;
-`;
-const ValueText = styled(Text)`
-    ${tw`text-text_2`}
-    ${({ rowdisplay }: { rowdisplay?: string }) => {
-        if (rowdisplay === "true") {
-            return tw`pl-4`;
-        }
-        return "";
-    }}
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 22px;
-`;
-
-const NotiText = styled(Text)`
-    ${tw`text-text_2 mt-2`}
-    font-size: 16px;
-    line-height: 22px;
-`;
 export type ProfileInfoProps = {
     profile: Profile;
 };
 
 const ProfileInfo: FC<ProfileInfoProps> = props => {
     const { profile } = props;
-    const { profileCode, name, notifications } = profile;
+    const { id, name, recentLocation, avatar } = profile;
     return (
-        <Wrapper>
-            <Box pt={3} pb={2} px={2}>
-                <InfoWrapper>
-                    <Box p={0}>
-                        <RowDisplay>
-                            <FieldName nowrap="true">Họ và tên:</FieldName>
-                            <ValueText rowdisplay="true">{name}</ValueText>
-                        </RowDisplay>
-                    </Box>
-                    <Box my={4}>
-                        <Divider />
-                    </Box>
-                    <Box p={0} flex flexDirection="row" alignItems="center">
-                        <IDText size="large">Mã số hồ sơ: {profileCode}</IDText>
-                        <CopyButton content={profileCode ?? ""} />
-                    </Box>
-
-                    <Box my={4}>
-                        <Divider />
-                    </Box>
-
-                    <Box>
-                        <FieldName>Thông báo</FieldName>
-                        {notifications?.map((noti, index) => (
-                            <Box mt={1} key={`noti-message-${index + 1}`}>
-                                <NotiText>
-                                    Thông báo {index + 1}: {noti.message}
-                                </NotiText>
-                            </Box>
-                        ))}
-                    </Box>
-                </InfoWrapper>
+        <Page>
+            {/* Thông tin cá nhân */}
+            <Box className="!flex flex-col justify-center items-center !p-3">
+                <Avatar src={avatar} size={80} />
+                <Text className="!text-xl !font-bold !my-2 !text-[24px]">
+                    {name}
+                </Text>
+                <Text className="!text-gray-500 !font-bold">ID: {id}</Text>
             </Box>
-        </Wrapper>
+
+            {/* Danh sách thông tin */}
+            {/* Activity Overview */}
+            <Box className="!p-3 !mt-6 !mb-4 !bg-blue-100 !rounded-lg !mx-5 !shadow-xl">
+                <Text size="large" className="!text-[16px] !font-bold">
+                    Activity Overview
+                </Text>
+                <Box className="!mt-2">
+                    <Text size="small" className="!text-gray-700 !font-bold">
+                        Recent Locations Checked:
+                    </Text>
+                    <Text size="small" className="!text-gray-700 !font-bold">
+                        No recent locations
+                    </Text>
+                </Box>
+            </Box>
+
+            {/* Privacy Policy */}
+            <Box className="!p-3 !mt-4 !bg-indigo-100 !rounded-lg !mx-5 !shadow-xl">
+                <Text size="large" className="!text-[16px] !font-bold">
+                    Privacy Policy
+                </Text>
+                <Box className="!mt-2">
+                    <Text size="small" className="!text-gray-700 !font-bold">
+                        Our app respects your privacy. We do not store any
+                        personal data without your consent. For more details,
+                        please review our full policy.
+                    </Text>
+                </Box>
+            </Box>
+        </Page>
     );
 };
 

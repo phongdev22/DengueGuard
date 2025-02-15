@@ -2,7 +2,7 @@
 import React, { FunctionComponent } from "react";
 import styled from "styled-components";
 import tw from "twin.macro";
-import { Text, Box } from "zmp-ui";
+import { Text, Box, useNavigate } from "zmp-ui";
 
 import WithItem from "./WithItemClick";
 
@@ -12,11 +12,13 @@ export interface UtinityItemProps {
     icon_v2?: string;
     path?: string;
     onClick?: any;
+    buttonMore?: boolean;
     inDevelopment?: boolean;
     phoneNumber?: string;
     link?: string;
     content?: string;
     description?: string;
+    handleOpenMore?: () => void;
     handleClickUtinity?: ({
         inDevelopment,
         path,
@@ -53,6 +55,7 @@ const UtinityItem: FunctionComponent<UtinityItemProps> = props => {
         label,
         description,
         content,
+        handleOpenMore,
         handleClickUtinity,
     } = props;
 
@@ -60,7 +63,7 @@ const UtinityItem: FunctionComponent<UtinityItemProps> = props => {
         event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     ) => {
         event.preventDefault();
-        handleClickUtinity?.(props);
+        // handleClickUtinity?.(props);
     };
 
     return (
@@ -68,10 +71,43 @@ const UtinityItem: FunctionComponent<UtinityItemProps> = props => {
             onClick={handleClick}
             style={{
                 cursor: "pointer",
-                border: "1px solid red",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                padding: "16px",
+                backgroundColor: "#fff",
             }}
         >
-            <Box>{label}</Box>
+            <Box
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px",
+                }}
+            >
+                <span>{label}</span>
+                {props.buttonMore && (
+                    <Text
+                        style={{
+                            border: "none",
+                            backgroundColor: "green",
+                            color: "white",
+                            padding: "8px 16px",
+                            borderRadius: "5px",
+                            fontWeight: "bold",
+                            textAlign: "center",
+                            cursor: "pointer",
+                            transition: "all 0.3s ease-in-out",
+                            boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.2)",
+                            outline: "none",
+                        }}
+                        onClick={handleOpenMore}
+                    >
+                        More
+                    </Text>
+                )}
+            </Box>
             {/* {Icon && (
                 <IconWrapper>
                     <CenterIcon>

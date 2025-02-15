@@ -2,8 +2,6 @@ import React, { FunctionComponent } from "react";
 import styled from "styled-components";
 import tw from "twin.macro";
 import { List } from "zmp-ui";
-
-import { ImageIcon } from "@components/icons";
 import { Utinity } from "@dts";
 import WithItemClick from "./WithItemClick";
 
@@ -45,7 +43,7 @@ const UtinityItem: FunctionComponent<ItemProps> = props => {
     return (
         <StyledListItem
             onClick={handleClick}
-            prefix={<ImageIcon src={iconSrc} />}
+            // prefix={<ImageIcon src={iconSrc} />}
             title={label}
         />
     );

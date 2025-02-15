@@ -38,7 +38,10 @@ export type ProfileNotification = {
 };
 
 export type Profile = {
+    id?: string;
+    avatar?: string;
     name?: string;
+    recentLocation?: object;
     dueDate?: Date;
     profileCode?: string;
     notifications?: ProfileNotification[];
@@ -129,6 +132,7 @@ export type Utinity = {
     label: string;
     icon?: FC<any>;
     icon_v2?: string;
+    buttonMore?: boolean;
     iconSrc?: string;
     path?: string;
     link?: string;

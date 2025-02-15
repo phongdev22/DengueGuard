@@ -11,6 +11,9 @@ import createOrganizationSlide, {
 } from "./organizationSlice";
 import createScheduleSlide, { ScheduleSlice } from "./scheduleSlice";
 import createProfileSlice, { ProfileSlice } from "./profileSlice";
+import createSelectedLocationSlice, {
+    SelectedLocationSlice,
+} from "./selectedLocationSlice";
 
 type State = AppSlice &
     AuthSlice &
@@ -18,7 +21,8 @@ type State = AppSlice &
     InformationGuideSlice &
     OrganizationSlice &
     ScheduleSlice &
-    ProfileSlice;
+    ProfileSlice &
+    SelectedLocationSlice; // Thêm selectedLocationSlice
 
 export const useStore = create<State>()(
     devtools((...a) => ({
@@ -29,5 +33,6 @@ export const useStore = create<State>()(
         ...createOrganizationSlide(...a),
         ...createScheduleSlide(...a),
         ...createProfileSlice(...a),
+        ...createSelectedLocationSlice(...a), // Thay thế selectedProvince bằng selectedLocation
     })),
 );

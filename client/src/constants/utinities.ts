@@ -1,4 +1,3 @@
-import * as Icon from "@components/icons";
 import { Utinity } from "@dts";
 import SocialInsuranceLogo from "@assets/logo-social-insurance.png";
 import Youtube from "@assets/youtube.png";
@@ -15,38 +14,19 @@ export const APP_UTINITIES: Array<Utinity> = [
         label: "Weather Forecast",
         description:
             "The weather is expected to be clear and sunny throughout the day with mild temperatures.",
-        content: "Sunny 25C",
-        icon: Icon.CalendarIcon,
+        content: "Sunny 25°C",
+        buttonMore: true,
         icon_v2: "☀️",
-        path: "/weather-forecast",
+        path: "/weather",
     },
     {
         key: "info",
         label: "Pandemic outbreak prediction",
-        icon: Icon.BookIcon,
         icon_v2: "🦠",
         path: "/pandemic-outbreak-prediction",
         description:
             "Current predictions show a stable trend in pandemic cases with no significant outbreaks expected.",
     },
-    /*  {
-        key: "feedback",
-        label: "Góp ý - phản ánh",
-        icon: Icon.PenIcon,
-        path: "/feedbacks",
-    },
-    {
-        key: "goverment",
-        label: "Cổng dịch vụ công quốc gia",
-        icon: Icon.GlobeIcon,
-        link: "https://dichvucong.gov.vn/",
-    },
-    {
-        key: "file-search",
-        label: "Tra cứu hồ sơ",
-        icon: Icon.SearchIcon,
-        path: "/search",
-    }, */
 ];
 
 export const CONTACTS: Array<Utinity> = [

@@ -3,9 +3,12 @@ import styled from "styled-components";
 import tw from "twin.macro";
 import Background from "@assets/background.png";
 import UtinityItem, { UtinityItemProps } from "./UtilityItem";
-
+import { Box, Button } from "zmp-ui";
 interface UtinitiesProps {
-    utinities: UtinityItemProps & { key: string }[];
+    utinities: (UtinityItemProps & { key: string })[];
+    openModal: any;
+    currentLocation: any | null;
+    currentWeather: any | null;
 }
 
 const UtinitiesWrapper = styled.div`
@@ -15,7 +18,7 @@ const UtinitiesWrapper = styled.div`
     padding-top: 24px;
 `;
 const Utinities: FunctionComponent<UtinitiesProps> = props => {
-    const { utinities } = props;
+    const { utinities, openModal, currentLocation, currentWeather } = props;
     return (
         <UtinitiesWrapper
             style={{
@@ -26,7 +29,7 @@ const Utinities: FunctionComponent<UtinitiesProps> = props => {
                 height: "100%",
             }}
         >
-            <div
+            <Box
                 style={{
                     marginBottom: "16px",
                     fontSize: "1.5rem",
@@ -34,11 +37,29 @@ const Utinities: FunctionComponent<UtinitiesProps> = props => {
                 }}
             >
                 Hello, Welcome back!
-            </div>
+            </Box>
+            <Button
+                onClick={openModal.modalLocation}
+                style={{
+                    marginBottom: "16px",
+                }}
+            >
+                Choose your location?
+            </Button>
+
+            <Box className="!mb-3">
+                Current location: {currentLocation["label"]}
+            </Box>
 
             {utinities.map(item => {
                 const { key, ...utinity } = item;
-                return <UtinityItem key={key} {...utinity} />;
+                return (
+                    <UtinityItem
+                        key={key}
+                        {...utinity}
+                        handleOpenMore={openModal.modalMore}
+                    />
+                );
             })}
         </UtinitiesWrapper>
     );

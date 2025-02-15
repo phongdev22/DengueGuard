@@ -1,19 +1,9 @@
 import React, { useState } from "react";
 import { Route } from "react-router-dom";
 import { AnimationRoutes, ZMPRouter, BottomNavigation, Icon } from "zmp-ui";
-
-import {
-    FeedbackPage,
-    FeedbackDetailPage,
-    CreateFeedbackPage,
-} from "./Feedback";
-import { GuidelinesPage } from "./Guidelines";
 import { HomePage } from "./Home";
-import { InformationGuidePage } from "./InformationGuide";
-import { CreateScheduleAppointmentPage } from "./CreateScheduleAppointment";
-import { AppointmentScheduleResultPage } from "./AppointmentScheduleResult";
-import { SearchPage } from "./Search";
 import { ProfilePage } from "./Profile";
+import { WeatherChartPage } from "./WeatherChart";
 
 const Routes: React.FC = () => {
     const [activeTab, setActiveTab] = useState("home");
@@ -22,27 +12,7 @@ const Routes: React.FC = () => {
         <ZMPRouter>
             <AnimationRoutes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/guidelines" element={<GuidelinesPage />} />
-
-                <Route path="/feedbacks" element={<FeedbackPage />} />
-                <Route path="/feedbacks/:id" element={<FeedbackDetailPage />} />
-                <Route
-                    path="/create-feedback"
-                    element={<CreateFeedbackPage />}
-                />
-                <Route
-                    path="/create-schedule-appointment"
-                    element={<CreateScheduleAppointmentPage />}
-                />
-                <Route
-                    path="/schedule-appointment-result"
-                    element={<AppointmentScheduleResultPage />}
-                />
-                <Route
-                    path="/information-guide"
-                    element={<InformationGuidePage />}
-                />
-                <Route path="/search" element={<SearchPage />} />
+                <Route path="/weather-chart" element={<WeatherChartPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
             </AnimationRoutes>
 
@@ -61,7 +31,7 @@ const Routes: React.FC = () => {
                     key="weather"
                     label="Weather"
                     icon={<Icon icon="zi-location-solid" />}
-                    linkTo="/weather"
+                    linkTo="/weather-chart"
                 />
                 <BottomNavigation.Item
                     key="profile"
