@@ -89,7 +89,6 @@ interface Location {
 
 const getHeatmapColor = value => {
     let hue;
-
     if (value <= 50) {
         // Xanh lá (120) → Vàng (60)
         hue = 120 - (value / 50) * 60;
@@ -97,15 +96,14 @@ const getHeatmapColor = value => {
         // Vàng (60) → Đỏ (0)
         hue = 60 - ((value - 50) / 50) * 60;
     }
-
     return `hsl(${hue}, 100%, 50%)`;
 };
 
-const getWeatherDataByLocation = async (lat: number, long: number) => {
+const getWeatherDataByLocation = async (lat: number, lon: number) => {
     console.log("Fetching weather data...");
     try {
         const response = await axios.get(
-            `https://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${long}&appid=${API_KEY}`,
+            `https://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${lon}&appid=${API_KEY}`,
         );
         const dailyForecasts = response.data.list.map(day => {
             const dateObj = new Date(day.dt * 1000);
@@ -131,78 +129,10 @@ const getWeatherDataByLocation = async (lat: number, long: number) => {
 
 const processPredict = async (code: string, lat: number, lon: number) => {
     try {
-        // 🕒 Tính timestamp từ 5 ngày trước đến hiện tại
-        const now = Math.floor(Date.now() / 1000); // UNIX timestamp hiện tại
-        const sevenDaysAgo = now - 8 * 86400; // Lùi lại 5 ngày (86400s = 1 ngày)
-
-        // 🛠️ Gọi API OpenWeather để lấy dữ liệu lịch sử
-        const { data } = await axios.get(
-            `https://history.openweathermap.org/data/2.5/history/city`,
-            {
-                params: {
-                    lat,
-                    lon,
-                    type: "hour",
-                    start: sevenDaysAgo,
-                    end: now,
-                    units: "metric",
-                    appid: API_KEY,
-                },
-            },
-        );
-
-        if (!data || !data.list) {
-            return { error: "Không thể lấy dữ liệu thời tiết" };
-        }
-
-        console.log("Weather Data:", data);
-
-        // 🛠️ Xử lý dữ liệu thời tiết để lấy các đặc trưng
-        let totalRainfall = 0;
-        let nRainingDays = 0;
-        let totalTemperature = 0;
-        let minHumidity = Infinity;
-        let totalCloudCover = 0;
-        let count = 0;
-
-        data.list.forEach((item: any) => {
-            // 🌧️ Tổng lượng mưa & số ngày có mưa (nếu có dữ liệu mưa)
-            if (item.rain && item.rain["3h"] !== undefined) {
-                totalRainfall += item.rain["3h"];
-                if (item.rain["3h"] > 0) nRainingDays++;
-            }
-
-            // 🌡️ Tính nhiệt độ trung bình
-            if (item.main?.temp !== undefined) {
-                totalTemperature += item.main.temp;
-                count++;
-            }
-
-            // 💧 Độ ẩm thấp nhất
-            if (item.main?.humidity !== undefined) {
-                minHumidity = Math.min(minHumidity, item.main.humidity);
-            }
-
-            // ☀️ Ước tính số giờ có nắng từ % mây
-            if (item.clouds?.all !== undefined) {
-                totalCloudCover += 100 - item.clouds.all; // Ít mây hơn => nhiều nắng hơn
-            }
-        });
-
-        // 🛠️ Tính toán các chỉ số thời tiết
-        const features = {
-            totalRainfall,
-            nRainingDays,
-            averageTemperature: count > 0 ? totalTemperature / count : 0,
-            minHumidity,
-            nHoursSunshine: count > 0 ? (totalCloudCover / count) * 0.24 : 0, // Giả định tỷ lệ % nắng trên 24h
-        };
-
-        console.log("Computed Features:", features);
-        // 🛠️ Gửi request đến backend để nhận dự đoán
         const response = await axios.post("http://localhost:8000/predict", {
             code,
-            ...features,
+            lat,
+            lon,
         });
         console.log("Response data:", response.data);
         return response.data?.prediction ?? 0;
